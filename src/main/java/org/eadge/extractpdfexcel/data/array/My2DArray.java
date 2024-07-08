@@ -25,13 +25,10 @@ public class My2DArray<T>
      *
      * @return element at the position or null if there is nothing.
      */
-    public T get(int col, int line)
-    {
+    public T get(int col, int line) {
         assert (col >= 0 && line >= 0);
 
-        if (col >= numberOfColumns() ||
-                line > numberOfLines())
-        {
+        if (col >= numberOfColumns() || line > numberOfLines()) {
             return null;
         }
 

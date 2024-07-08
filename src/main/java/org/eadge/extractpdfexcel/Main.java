@@ -11,8 +11,19 @@ public class Main
     {
         if (args.length == 0)
         {
-            printHelp();
-            return;
+            try {
+                MainHelper.peek("");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // args = new String[]{
+            //     "",
+            //     ""
+            // };
+
+//            printHelp();
+           return;
         }
 
         if (args.length == 1)

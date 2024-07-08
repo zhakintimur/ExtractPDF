@@ -1,8 +1,5 @@
 package org.eadge.extractpdfexcel;
 
-import com.itextpdf.text.pdf.AcroFields;
-import com.itextpdf.text.pdf.PRAcroForm;
-import com.itextpdf.text.pdf.PdfDictionary;
 import com.itextpdf.text.pdf.PdfReader;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -25,8 +22,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by eadgyo on 12/07/16.
@@ -388,6 +383,48 @@ public class PdfConverter
         return null;
     }
 
+    public static HSSFSheet createSingleExcelSheet(
+        String sheetName,
+        HSSFWorkbook wb,
+        ArrayList<XclPage> xclPages,
+        double lineFactor,
+        double columnFactor
+    ) {
+        // Create excel sheet
+        HSSFSheet sheet = wb.createSheet(sheetName);
+        int lineCounter = 0;
+
+        for (XclPage xclPage : xclPages) {
+            // Parse columns and lines
+            for (int line = 0; line < xclPage.numberOfLines(); line++, lineCounter++) {
+                HSSFRow createdLine = sheet.createRow(lineCounter);
+                if (lineFactor != 0)
+                    createdLine.setHeight((short) (xclPage.getLineHeight(line) * 50));
+                for (int col = 0; col < xclPage.numberOfColumns(); col++) {
+                    Block block = xclPage.getBlockAt(col, line);
+
+                    // If there is a block a the given position
+                    if (block != null) {
+                        // Create a new cell and add the block content in this new cell
+                        HSSFCell createdCell = createdLine.createCell(col);
+                        createdCell.setCellValue(block.getFormattedText());
+                    }
+                }
+            }
+
+            // Set the width of each lane
+            if (columnFactor != 0)
+            {
+                for (int col = 0; col < xclPage.numberOfColumns(); col++)
+                {
+                    sheet.setColumnWidth(col, (int) xclPage.getColumnWidth(col) * 20);
+                }
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Convert a pdf file into an excel sheets
      * @param sourcePDFPath path for the used source pdf
@@ -417,14 +454,18 @@ public class PdfConverter
         // Create 2D array pages containing information
         ArrayList<XclPage> excelPages = PdfConverter.createExcelPages(sortedData);
 
+        // Create single sheet for all pages
+        HSSFSheet excelSheet = createSingleExcelSheet("Выписка", workbook, excelPages, lineFactor, columnFactor);
+        sheets.add(excelSheet);
+
         // Create sheets for each pages
-        int page = 1;
-        for (XclPage excelPage : excelPages)
-        {
-            HSSFSheet excelSheet = PdfConverter.createExcelSheet("page " + page, workbook, excelPage, lineFactor, columnFactor);
-            sheets.add(excelSheet);
-            page++;
-        }
+//        int page = 1;
+//        for (XclPage excelPage : excelPages)
+//        {
+//            HSSFSheet excelSheet = PdfConverter.createExcelSheet("page " + page, workbook, excelPage, lineFactor, columnFactor);
+//            sheets.add(excelSheet);
+//            page++;
+//        }
 
         return sheets;
     }
